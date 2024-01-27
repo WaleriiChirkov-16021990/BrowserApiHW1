@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="index.js" type="text/javascript" defer></script>
+</head>
+<body>
+<table id="schedule-table">
+    <tr>
+        <th>Название занятия</th>
+        <th>Время проведения</th>
+        <th>Максимальное количество участников</th>
+        <th>Текущее количество участников</th>
+    </tr>
+</table>
+
+<script>
+    'use strict';
+
+
+    // получение данных из localStorage
+    // Заполнение таблицы
+
+    const table = document.getElementById('schedule-table');
+    fillingTable(table);
+
+    function fillingTable(table) {
+        table.innerHTML = `<tr>
+        <th>Название занятия</th>
+        <th>Время проведения</th>
+        <th>Максимальное количество участников</th>
+        <th>Текущее количество участников</th>
+    </tr>`;
+        const data = JSON.parse(localStorage.getItem('data'));
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+          <td>${item.name}</td>
+          <td>${item.time}</td>
+          <td>${item.maxParticipants}</td>
+          <td>${item.currentParticipants}</td>
+          <td><button class="enroll-button">Записаться</button></td>
+          <td><button class="cancel-enrollment-button">Отменить запись</button></td>
+        `;
+            table.appendChild(row);
+
+            const enrollmentButton = row.querySelector('.enroll-button');// кнопка "Записаться"
+            if (item.currentParticipants >= item.maxParticipants) {
+                enrollmentButton.disabled = true;
+            }
+
+            enrollmentButton.addEventListener('click', () => {
+                enroll(data, item.id, table);
+            });
+            const cancelEnrollmentButton = row.querySelector('.cancel-enrollment-button'); // кнопка "Отменить запись"
+            if (item.currentParticipants === 0) {
+                cancelEnrollmentButton.disabled = true;
+            }
+
+            cancelEnrollmentButton.addEventListener('click', () => {
+                cancelEnrollment(data, item.id, table);
+            });
+
+        });
+    }
+
+    function refreshTable(table) {
+        table.innerHTML = '';
+        fillingTable(table);
+    }
+
+    // Сохранение данных в localStorage
+    function saveLocalStorage(data) {
+        localStorage.setItem('data', JSON.stringify(data));
+    }
+
+
+    // Функция для записи на занятие
+    function enroll(data, itemId, table) {
+        // Код для увеличения количества записанных участников и обновления состояния кнопок и таблицы
+        data.forEach(item => {
+            if (item.id === itemId) {
+                if (item.currentParticipants >= item.maxParticipants) {
+                    return;
+                }
+                item.currentParticipants++;
+            }
+        });
+        saveLocalStorage(data);
+        refreshTable(table);
+    }
+
+    // Функция для отмены записи на занятие
+    function cancelEnrollment(data, itemId, table) {
+        //Код для уменьшения количества записанных участников и обновления состояния кнопок и таблицы
+        data.forEach(item => {
+            if (item.id === itemId) {
+                if (item.currentParticipants <= 0) {
+                    return;
+                }
+                item.currentParticipants--;
+            }
+        });
+        saveLocalStorage(data);
+        refreshTable(table);
+    }
+</script>
+
+</body>
+</html>
